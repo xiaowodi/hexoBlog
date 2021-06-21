@@ -6,6 +6,7 @@ Welcome to [Hexo](https://hexo.io/)! This is your very first post. Check [docume
 ## Quick Start
 这是一段测试文字2 hello world!!!
 这是另一段测试文字
+这是另一段测试文字
 ### Create a new post
 
 ``` bash
