@@ -1,12 +1,10 @@
 ---
 title: Hello World
 ---
-Welcome to [Hexo](https://hexo.io/)! This is your very first post. Check [documentation](https://hexo.io/docs/) for more info. If you get any problems when using Hexo, you can find the answer in [troubleshooting](https://hexo.io/docs/troubleshooting.html) or you can ask me on [GitHub](https://github.com/hexojs/hexo/issues).
+Welcome to [Xiaowodi‘s Hexo](https://hexo.io/)! 
 
 ## Quick Start
-这是一段测试文字2 hello world!!!
-这是另一段测试文字
-这是另一段测试文字
+
 ### Create a new post
 
 ``` bash
