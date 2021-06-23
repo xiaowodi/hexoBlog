@@ -3,7 +3,6 @@
 title: Git学习随手记
 ---
 
-
 ###  Git介绍
 
 分布式版本控制工具 VS 集中式版本控制
@@ -91,7 +90,7 @@ Date:   Sun May 9 00:35:50 2021 +0800
 
 分支特性、分支创建、分支转换、分支合并、代码合并冲突解决
 
-![未命名文件 (1)](../../../../Downloads/%E6%9C%AA%E5%91%BD%E5%90%8D%E6%96%87%E4%BB%B6%20(1).png)
+
 
 git的分支操作其实实际上就是操纵两个重要的指针：
 
@@ -152,7 +151,9 @@ git的分支操作其实实际上就是操纵两个重要的指针：
 
 #### 团队内协作
 
-![image-20210509013649215](../../../../Library/Application%20Support/typora-user-images/image-20210509013649215.png)
+![1.png](https://github.com/xiaowodi/Resources/blob/main/images/gitImages/1.png?raw=true)
+
+
 
 
 
@@ -170,7 +171,7 @@ git的分支操作其实实际上就是操纵两个重要的指针：
 
 #### 跨团队协作
 
-![image-20210509014532309](../../../../Library/Application%20Support/typora-user-images/image-20210509014532309.png)
+![2.png](https://github.com/xiaowodi/Resources/blob/main/images/gitImages/2.png?raw=true)
 
 形象的例子：
 
@@ -400,7 +401,7 @@ version 1
 >
 > ```shell
 > $ git cat-file -t 1f7a7a472abf3dd9643fd615f6da379c4acb3e3a
->   blob
+> blob
 > ```
 
 ##### 树对象
@@ -439,7 +440,9 @@ $ git cat-file -p master^{tree}
 
 ###### Git 内部存储的数据（tree对象）
 
-<img src="../../../../Library/Application%20Support/typora-user-images/image-20210615175949733.png" alt="image-20210615175949733" style="zoom:50%;" />
+![3.png](https://github.com/xiaowodi/Resources/blob/main/images/gitImages/3.png?raw=true)
+
+
 
 
 
@@ -656,7 +659,9 @@ $ git cat-file -p 3c4e9cd789d88d8d89c1073707c3585e41b0e614
 
 代码中第10步的树对象3c4e9cd789d88d8d89c1073707c3585e41b0e614对应的结构示意图
 
-<img src="../../../../Library/Application%20Support/typora-user-images/image-20210615213930961.png" alt="image-20210615213930961" style="zoom:50%;" />
+![4.png](https://github.com/xiaowodi/Resources/blob/main/images/gitImages/4.png?raw=true)
+
+
 
 ```shell
 ##########################
@@ -692,6 +697,110 @@ c759b5a289338e9d55333ff7900fdc4ee0526c33
 #通过上述操作，已经创建了3个commit对象
 ### ###
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
