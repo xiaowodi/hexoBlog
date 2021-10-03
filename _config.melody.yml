@@ -17,10 +17,10 @@
 
 # Main menu navigation
 menu:
-  Home: /
-  Archives: /archives
-  Tags: /tags
-  Categories: /categories
+  # Home: /
+  # Archives: /archives
+  # Tags: /tags
+  # Categories: /categories
   #XXX: /xxx
 
 # Favicon
@@ -164,6 +164,7 @@ slide:
   separator_vertical: --
   charset: utf-8
   theme: black
+  codeTheme: monokai
   # optional
   mouseWheel: false
   transition: slide
@@ -172,6 +173,14 @@ slide:
   parallaxBackgroundSize: ""
   parallaxBackgroundHorizontal: null
   parallaxBackgroundVertical: null
+  loop: false
+  autoSlide: false
+  controlsBackArrows: 'faded'
+  controlsLayout: 'bottom-right' # Determines where controls appear, "edges" or "bottom-right"
+  progress: true
+  showNotes: false
+  autoPlayMedia: false
+  backgroundTransition: 'fade'
 
 # QR_code:
 # - itemlist:
@@ -225,11 +234,24 @@ disqus:
 #   appKey:  # leancloud application app key
 #   notify: false # valine mail notify (true/false) https://github.com/xCss/Valine/wiki
 #   verify: false # valine verify code (true/false)
+#   recordip: false # whether record commentor's ip (true/false)
 #   pageSize: 10 # comment list page size
 #   avatar: mm # gravatar style https://valine.js.org/#/avatar
 #   lang: zh-cn # i18n: zh-cn/en
 #   placeholder: Just go go # valine comment input placeholder(like: Please leave your footprints )
 #   guest_info: nick,mail,link #valine comment header inf
+
+# vssue:
+  # enable: false # Set to true to enable
+  # platform: github-v4
+  # owner:
+  # repo:
+  # clientId:
+  # clientSecret: # only required for some of the platforms
+  # autoCreateIssue: false # Auto create issue on platform (github/...)
+  # baseURL: "" # For self-hosted gitlab/bitbucket only, see here: https://vssue.js.org/options/#baseurl
+  # perPage: 10 # How much comment/page
+  # labels: 'Vssue'
 
 # Footer Settings
 # ---------------
