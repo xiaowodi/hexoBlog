@@ -1,8 +1,13 @@
+
 ---
-title:Spring学习
+title: Spring
 ---
 
 
+
+
+
+[TOC]
 
 
 
@@ -209,26 +214,26 @@ Bean管理指的是两个操作：`Spring创建对象`；`Spring注入属性`
    > 2. 使用有参数构造进行注入
    >
    >    ```xml
-   >    
+   >             
    >        <bean id="order" class="com.yulu.demo.Beans.Order">
    >            <constructor-arg name="orderId" value="order::1"></constructor-arg>
    >            <constructor-arg name="orderUser" value="yulu"></constructor-arg>
    >        </bean>
-   >    
+   >             
    >    ```
    >
    >    ```java
    >    package com.yulu.demo.Beans;
-   >    
+   >             
    >    public class Order {
    >        private String orderId;
    >        private String orderUser;
-   >    
+   >             
    >        public Order(String orderId, String orderUser) {
    >            this.orderId = orderId;
    >            this.orderUser = orderUser;
    >        }
-   >    
+   >             
    >        public void printInfo(){
    >            System.out.println("orderId::"+orderId+"\t orderUser::"+orderUser);
    >        }
