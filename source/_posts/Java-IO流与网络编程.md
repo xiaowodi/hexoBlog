@@ -441,27 +441,272 @@ public void transformation() throws IOException {
   - DataInputStream和DataOutputStream
   - 分别“套接”在InputStream和OutputStream
 
+**数据流**：
+
+- DataInputStream：数据输入流
+- DataOutputStream：数据输出流
+
+```java
+@Test
+public void dataStreamDemoWrite() throws IOException{
+    // 数据流 可以读取特定类型的数据，可以写特定的数据类型的数据
+
+    // 输出
+    DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File("Files\\data.txt")));
+    dos.writeChar('c');
+    dos.writeBoolean(true);
+    dos.writeDouble(2.0798654);
+    dos.writeLong(123456789L);
+    dos.flush();
+}
+@Test
+public void dataStreamDemoReade() throws IOException{
+    DataInputStream dis = new DataInputStream(new FileInputStream(new File("Files\\data.txt")));
+    char c = dis.readChar();
+    boolean b = dis.readBoolean();
+    double v = dis.readDouble();
+    long l = dis.readLong();
+    System.out.println(c+"\t"+b+"\t"+v+"\t"+l+"\t");
+}
+```
 
 
 
 
 
+## 1.7 对象流
+
+### 1.7.1 对象序列化机制的理解
+
+- `ObjectInputStream`和`ObjectOutputStream`
+- 用于存储和读取基本数据类型数据或对象的处理流。它的强大之处就是把Java中的对象写入到数据源中，也能把对象从数据源中还原回来。
+- 序列化：用`ObjectInputStream`类读取基本类型数据或对象的机制
+- 反序列化：用`ObjectInputStream`类读取基本类型数据或对象的机制
+- `ObjectOutputStream`和`ObjectInputStream`不能序列化`static`和`transient`修饰的成员变量
+- 对象序列化机制允许把内存中的Java对象转换成平台无关的二进制流，从而允许把这种二进制流持久地保存在磁盘上，或通过网络将这种二进制流传输到另一个网络节点。当其他程序获取这种二进制流，就可以恢复原来的Java对象。
+- 序列化的好处在于可将任何实现了`Serializable`接口的对象转化为字节数据，使其在保存和传输时刻被还原
+- 序列化是RMI（Remote Method Invoke-远程方法调用）过程的参数和返回值都必须实现的机制，而RMI是JavaEE的基础。因此序列化机制是JavaEE平台的基础
+- 如果需要让某个对象支持序列化机制，则必须让对象所属的类及其属性是可序列化的，为了让某个类是可序列化的，该类必须实现如下两个接口之一。否则，会抛出`NotSerializableException`异常
+  - `Serializable`
+  - `Externalizable`
 
 
 
+### 1.7.2 对象流序列化与反序列化字符串操作
+
+定义一个Person类，并实现`Serializable`接口，实现系列化功能，
+
+通过`ObjectOutputStream`将Person对象写入到`person.dat`文件中，然后通过`ObjectInputStream`将person读回内存。
+
+```java
+class Person implements Serializable{
+    private String name;
+    private int age;
+    public Person(String name, int age){
+        this.name=name;
+        this.age=age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+
+/**
+     * 序列化与反序列化
+     *  实现Serializable接口，即可将对象通过ObjectOutputStream存储到磁盘中
+     *                              通过ObjectInputStream读取到内存中
+     */
+@Test
+public void serializableDemo() throws IOException, ClassNotFoundException {
+    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("Files\\person.dat")));
+    Person person = new Person("yu", 25);
+    oos.writeObject(person);
+
+    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("Files\\person.data")));
+    Person person1 = (Person)ois.readObject();
+    System.out.println(person1);
+
+}
+```
+
+### 1.7.3 serialVersionUID的理解
+
+- 凡是实现`Serializable`接口的类都有一个表示序列化版本标识符的静态变量
+  - `private static final long serialVersionUID`
+  - `serialVersionUID`用来表明类的不同版本间的兼容性。简言之，其目的是以序列化对象进行版本控制，有关各版本反序列化时是否兼容
+  - 如果类没有显示定义这个静态常量，它的值是Java运行时环境根据类的内部细节自动生成的。若类的实力变量做了修改，`serialVersionUID`可能发生变化，故建议显示声明
+- 简单来说，Java的序列化机制是通过在运行时判断类的`serialVersionUID`来验证版本一致的。在进行反序列化时，JVM会把传来的字节流中的`serialVersionUID`与本地相应实体类的`serialVersionUID`进行比较，如果相同就认为是一致的，可以进行反序列化，否则就会出现序列化版本不一致的异常（InvalidCastException）
 
 
 
+如果想要一个类的对象可序列化，除了实现`Serializable`接口之外，还必须保证其内部所有的属性也必须是可序列化的。（默认情况下，基本数据类型都可序列化）
 
-## 1.7 对象流的使用
-
-
-
+一般情况下需要自定义`serialVersionUID`
 
 
-## 1.8 RandomAccessFile的使用
+
+> **序列化机制**
+>
+> 对象序列化机制允许把内存中的Java对象转换成平台无关的二进制流，从而允许把这种二进制流持久地保存在磁盘上，或通过网络将这种二进制流传输到另一个网络节点。当其他程序获取了这种二进制流，就可以恢复成原来的Java对象。
 
 
+
+## 1.8 RandomAccessFile(随机存取文件流)的使用
+
+- `RandomAccessFile`声明在`java.io`包下，但直接继承于`java.lang.Object`类。并且它实现了`DataInput、DataOutput`这两个接口，也就意味着这个类**既可以读也可以写**
+- `RandomAccessFile`类支持“随机访问”的方式，程序可以直接跳到文件的任意地方来读、写文件
+  - 支持只访问文件的部分内容
+  - 可以向已存在的文件后追加内容
+- `RandomAccessFile`对象包含一个记录指针，用以表示单签读写处的位置。`RandomAccessFile`类对象可以自己移动记录指针：
+  - `long getFilePointer()`
+  - `void seek(long pos)`
+- 构造器
+  - `public RandomAccessFile(File file, String mode)`
+  - `public RandomAccessFile(String name, String mode)`
+- 创建RandomAccessFile类实例需要指定一个mode参数，该参数指定RandomAccessFile的访问模式：
+  - `r`：以只读方式打开
+  - `rw`：打开以便读取和写入
+  - `rwd`：打开以便读取和写入；同步文件内容的更新
+  - `rws`：打开以便读取和写入；同步文件内容和元数据的更新
+- 如果模式为只读`r`，则不会创建文件，而是会去读取一个已经存在的文件，如果读取的文件不存在则会出现异常。如果模式为`rw`读写，如果文件不存在则去创建文件，如果存在则不会创建。
+
+```java
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+/**
+ * RandomAccessFile的使用
+ * 1.RandomAccessFile直接继承于java.lang.Object类，实现了DataInput和DataOutput接口
+ * 2.RandomAccessFile既可以作为一个输入流，又可以作为一个输出流
+ * 3.如果RandomAccessFile作为输出流时，写出到的文件如果不存在，则在执行过程中自动创建。
+ *   如果写出到的文件存在，则会对原有文件内容进行覆盖。（默认情况下，从头覆盖）
+ */
+public class RandomAccessFileTest {
+
+    @Test
+    public void test(){
+
+        RandomAccessFile raf1 = null;
+        RandomAccessFile raf2 = null;
+        try {
+            raf1 = new RandomAccessFile(new File("爱情与友情.jpg"),"r");
+            raf2 = new RandomAccessFile(new File("爱情与友情1.jpg"),"rw");
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while((len = raf1.read(buffer)) != -1){
+                raf2.write(buffer,0,len);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(raf1 != null){
+                try {
+                    raf1.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            if(raf2 != null){
+                try {
+                    raf2.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    @Test
+    public void test2() throws IOException {
+
+        RandomAccessFile raf1 = new RandomAccessFile("hello.txt","rw");
+
+        raf1.write("xyz".getBytes());
+
+        raf1.close();
+
+    }
+
+}
+```
+
+RandomAccessFile实现数据的插入（seek()方法会重置偏移量）
+
+```java
+// 
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+/**
+ * RandomAccessFile的使用
+ * 1.RandomAccessFile直接继承于java.lang.Object类，实现了DataInput和DataOutput接口
+ * 2.RandomAccessFile既可以作为一个输入流，又可以作为一个输出流
+ * 3.如果RandomAccessFile作为输出流时，写出到的文件如果不存在，则在执行过程中自动创建。
+ *   如果写出到的文件存在，则会对原有文件内容进行覆盖。（默认情况下，从头覆盖）
+ *
+ * 4.可以通过相关的操作，实现RandomAccessFile“插入”数据的效果
+ */
+public class RandomAccessFileTest {
+
+    /**
+     * 使用RandomAccessFile实现数据的插入效果
+     */
+    @Test
+    public void test3() throws IOException {
+        RandomAccessFile raf1 = new RandomAccessFile("hello.txt","rw");
+
+        raf1.seek(3);//将指针调到角标为3的位置
+        //保存指针3后面的所有数据到StringBuilder中
+        StringBuilder builder = new StringBuilder((int) new File("hello.txt").length());
+        byte[] buffer = new byte[20];
+        int len;
+        while((len = raf1.read(buffer)) != -1){
+            builder.append(new String(buffer,0,len)) ;
+        }
+        //调回指针，写入“xyz”
+        raf1.seek(3);
+        raf1.write("xyz".getBytes());
+
+        //将StringBuilder中的数据写入到文件中
+        raf1.write(builder.toString().getBytes());
+
+        raf1.close();
+
+        //思考：将StringBuilder替换为ByteArrayOutputStream
+    }
+
+}
+```
 
 
 
@@ -479,9 +724,390 @@ public void transformation() throws IOException {
 
 # 2. 网络编程
 
+### 2.1 网络编程概述
+
+- Java是Internet上的语言，它从语言级上提供了对网络应用程序的支持，程序员能够很容易开发常见的网络应用程序。
+- Java提供的网络类库，可以实现无痛的网络连接，联网的底层细节被隐藏在Java的本机安装系统中，有JVM进行控制。并且Java实现了一个跨平台的网络库，**程序面对的是一个统一的网络编程环境**。
+- 网络编程的目的：直接或间接地通过网络协议与其它计算机实现数据交换，进行通讯
+- 网络编程中有两个主要的问题：
+  - 如果准确地定位网络上一台或多台主机；定位主机上的特定的应用
+  - 找到主机后如何可靠高效地进行数据传输
+
+### 2.2 网络通信要素概述
+
+- 通信双方地址
+  - IP
+  - 端口号
+- 一定的规则（即：网络通信协议。有两套参考模型）
+  - OSI参考模型：模型过于理想化，未能在因特网上进行广泛推广
+  - TCP/IP参考模型（或TCP/IP协议）：实事上的国际标准
+- 网络通信协议
+
+![img](https://img-blog.csdnimg.cn/img_convert/09bdce6b569fe3cf80206cc704dbf7cb.png)
+
+![img](source/Java-IO流与网络编程/e769997523201f9fa4f83e501931e6e1.png)
+
+> 网络编程中有两个主要的问题：
+>
+> 1. 如何准确地定位网络上一台或多台主机；定位主机上的特定的应用
+> 2. 找到主机后如何可靠高效地进行数据传输
+>
+> 网络编程中的两个要素：
+>
+> 1. 对应问题1：IP和端口号
+> 2. 对应问题2：提供网络通信协议：TCP/IP参考模型（应用层、传输层、网络层、物理+数据链路层）
+
+### 2.3 通信要素1：IP和端口号
+
+#### 2.3.1 IP的理解与InetAddress类的实例化
+
+- IP地址：`InetAddress`
+  - 唯一的表示Internet上的计算机（通信实体）
+  - 本地回环地址（hostAddress）：127.0.01 主机名（hostName）：localhost
+  - IP地址分类方式1：IPV4和IPV6
+    - IPV4：由4个字节组成
+    - IPV6：由16个字节组成
+  - IP地址分类方式2：公网地址（万维网使用）和私有地址（局域网使用）。`192.168. . `开头的就是私有地址，范围即为`192.168.0.0 ~ 192.168.255.255`，专门为组织内部使用。
+- Internet上的主机有两种方式表示：
+  - 域名（hostName）：www.baidu.com
+  - IP地址（hostAddress）：220.181.38.149
+
+```java
+@Test
+public void test1() throws UnknownHostException {
+    InetAddress inetAddress = InetAddress.getByName("www.baidu.com");
+    System.out.println(inetAddress);
+    // 获取本地ip
+    System.out.println(InetAddress.getLocalHost());
+    // 获取主机名
+    System.out.println(inetAddress.getHostName());
+}
+
+//输出
+www.baidu.com/220.181.38.149
+DESKTOP-AQE9VH2/192.168.70.1
+www.baidu.com
+```
+
+#### 2.3.2 端口号的理解
+
+- 端口号表示正在计算机上运行的进程（程序）
+  - 不同的进程有不同的端口号
+  - 被规定为一个16位的整数`0~65535`
+  - 端口分类：
+    - 公认端口：`0~1023`.被预先定义的服务通信占用（如：HTTP占用端口80，FTP占用端口21，Telnet占用端口23）
+    - 注册端口：`1024~49151`.分配给用户进程或应用程序。（如：Tomcat占用端口8080，MySQL占用端口3306，Oracle占用端口1521等）。
+    - 动态/私有端口：49152~65535.
+- 端口号与IP地址的组合得出一个网络套接字：`Socket`
+
+![img](https://img-blog.csdnimg.cn/img_convert/cdbda7a9127a6319dcd57cc16be48849.png)
+
+
+
+### 2.4 通信要素2：网络协议
+
+- **网络通信协议**
+
+  计算机网络中实现通信必须有一些约定，即通信协议，对速率，传输代码，代码结构，传输控制步骤，出错控制等制定标准。
+
+- **问题：网络协议太复杂**
+
+  计算机网络通信设计内容很多，比如指定源地址和目标地址，加密解密，压缩解压缩，差错控制，流量控制，路由控制等
+
+- **通信协议分层的思想**
+
+  在制定协议时，把复杂问题分解成一些简单的成分，再将他们复合起来。最常用的复合方式使层次方式，即同层间可以通信，上一层可以调用下一层，而与再下一层不发生关系。各层互不影响，利于系统的开发和扩展。
+
+
+
+#### 2.4.1 TCP和UDP网络通信协议的对比
+
+- 传输层协议中有两个非常重要的协议：
+  - 传输控制协议TCP
+  - 用户数据报协议UDP
+- TCP/IP以其两个主要协议：传输控制协议（TCP）和网络互联协议（IP）而得名，实际上是一组协议，包括多个具有不同功能互为关联的协议。
+- IP协议是网络层的主要协议，支持网络间互连的数据通信
+- TCP/IP协议模型从更实用的角度出发，形成了高效的四层体系结构，即物理层、数据链路层、IP层、传输层T、应用层。
+- TCP协议：
+  - 使用TCP协议前，需先建立TCP连接，形传输数据通道
+  - 传输前，采用“三次握手”方式，点对点通信，是可靠的
+  - TCP协议进行通信的两个应用进程：客户端、服务端
+  - 在连接中进行大数据量的传输，传输完毕，需释放已建立的连接，效率低
+- UDP协议：
+  - 将数据、源、目的封装成数据包，不需要建立连接
+  - 每个数据报的大小限制在64K内
+  - 发送不管对方是否准备好，接收方收到也不确认，故是不可靠的
+  - 可以广播发送
+  - 发送数据结束时无需释放资源，开销小，速度快。
+
+![img](https://img-blog.csdnimg.cn/img_convert/e028a11c223c41376e42a0cecd7dc505.png)
+
+![img](https://img-blog.csdnimg.cn/img_convert/3125b3b4a4431912fa787bbeaea342b6.png)
+
+### 2.5 TCP网络编程
+
+```java
+// Client端 向 服务器端 发送数据
+@Test
+public void client() throws IOException {
+    // client 端 发送消息
+    Socket socket = null;
+    OutputStream os = null;
+    try{
+        // 1. 创建Socket对象，指明服务器端的ip和端口
+        InetAddress inet = InetAddress.getByName("192.168.137.237");
+        socket = new Socket(inet, 8899);
+        // 2. 获取一个输出流，用于输出数据
+        os = socket.getOutputStream();
+        // 3. 写出数据
+        os.write("hello world !".getBytes());
+    }catch(IOException e){
+        e.printStackTrace();
+    }finally {
+        if(os!=null){
+            os.close();
+        }
+        if(socket!=null){
+            socket.close();
+        }
+    }
+}
+
+// Server端接收Client端发送来的数据
+@Test
+public void server() throws IOException {
+    // server 端 接收消息
+    ServerSocket ss = null;
+    Socket socket = null;
+    InputStream is = null;
+    ByteArrayOutputStream baos = null;
+    // 1. 创建服务器端的ServerSocket，指明自己的端口号
+    ss = new ServerSocket(8899);
+    //2. 调用accept()表示接收来自客户端的socket
+    socket = ss.accept();
+    // 3. 获取输入流    获取输出流的时候，会阻塞，等待Client端 给服务器端发送数据
+    is = socket.getInputStream();
+    // 4. 读取输入流中的数据
+    baos = new ByteArrayOutputStream();
+    byte[] buffer = new byte[5];
+    int len=0;
+    while((len=is.read(buffer))!=-1){
+        baos.write(buffer,0,len);
+    }
+    System.out.println("收到来自："+socket.getInetAddress().getHostAddress()+"的数据");
+    System.out.println(baos.toString());
+}
+```
+
+
+
+TCP网络编程：从客户端发送文件给服务端，服务端保存到本地，并返回“发送成功”给客户端。并关闭相应的连接。
+
+```java
+@Test
+public void client2() throws IOException {
+    // 1. 客户端向服务端发送一张图片， 等待服务端接收完毕后返回 接收成功！ 信息
+    Socket socket = new Socket("127.0.0.1", 9090);
+    OutputStream os = socket.getOutputStream();
+    FileInputStream fis = new FileInputStream(new File("Files\\卡通 - 4.jpg"));
+    byte[] buffer = new byte[5];
+    int len = 0;
+    while ((len=fis.read(buffer))!=-1){
+        // 从文件中读取的数据写入到到socket输出流中
+        os.write(buffer,0,len);
+    }
+    // 关闭socket数据的输出
+    socket.shutdownOutput();
+    // 接收服务器端的数据，并显示到控制台上
+    InputStream is = socket.getInputStream();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    buffer = new byte[5];
+    len = 0;
+    while ((len=is.read(buffer))!=-1){
+        baos.write(buffer,0,len);
+    }
+    System.out.println(baos.toString());
+    fis.close();
+    os.close();
+    socket.close();
+}
+
+@Test
+public void server2() throws IOException{
+    ServerSocket ss = new ServerSocket(9090);
+    Socket socket = ss.accept();
+    InputStream is = socket.getInputStream();
+    FileOutputStream fos = new FileOutputStream(new File("Files\\图片1.jpg"));
+    byte[] buffer = new byte[1024];
+    int len=0;
+    while((len=is.read(buffer))!=-1){
+        fos.write(buffer,0,len);
+    }
+    System.out.println("服务器端接收数据完毕");
+
+    // 给客户端进行反馈
+    OutputStream os = socket.getOutputStream();
+    os.write("照片服务器端已经接收完毕".getBytes());
+    os.close();
+    fos.close();
+    is.close();
+    socket.close();
+    ss.close();
+}
+```
+
+
+
+### 2.6 UDP网络编程
+
+- 类**DatagramSocket**和**DatagramPacket**实现了基于UDP协议网络程序。
+- UDP数据报通过数据报套接字DatagramSocket发送和接收，系统不保证UDP数据包一定能够安全送到目的地，也不能确定什么时候可以抵达
+- DatagramPacket对象封装了UDP数据报，在数据报中包含了发送端的IP地址和端口号以及接收端的IP地址和端口号。
+- UDP协议中每个数据报都给出了完整的地址信息，因此无需建立发送方和接收方的连接。如同发快递包裹一样。
+- 流程
+  1. DatagramSocket与DatagramPacket
+  2. 建立发送端，接收端
+  3. 建立数据包
+  4. 调用Socket的发送、接收方法
+  5. 关闭Socket
+
+> 发送端与接收端是两个独立的运行程序
+
+```java
+@Test
+public void udpSend() throws IOException{
+    DatagramSocket socket = new DatagramSocket();
+    String str = "我是UDP发送端";
+    byte[] data = str.getBytes();
+    InetAddress inetAddress = InetAddress.getLocalHost();
+    DatagramPacket packet = new DatagramPacket(data,0,data.length,inetAddress,9090);
+    socket.send(packet);
+    socket.close();
+}
+@Test
+public void udpReceive() throws IOException{
+    DatagramSocket socket = new DatagramSocket(9090);
+    byte[] buffer = new byte[1024];
+    DatagramPacket packet = new DatagramPacket(buffer,0,buffer.length);
+    socket.receive(packet);
+    System.out.println(new String(packet.getData(),0,packet.getLength()));
+    socket.close();
+}
+```
+
+### 2.7 URL编程
+
+URL网络编程实现数据下载
+
+```java
+@Test
+public void urlDemo() throws IOException {
+    HttpURLConnection urlConnection = null;
+    InputStream is = null;
+    FileOutputStream fos = null;
+    URL url = new URL("https://pic2.zhimg.com/80/v2-576df7c2088825cc388a4a8f74f8b2ed_720w.jpg");
+    urlConnection = (HttpURLConnection) url.openConnection();
+    urlConnection.connect();
+    is = urlConnection.getInputStream(); // 得到输入流
+    fos = new FileOutputStream(new File("Files\\spark.jpg"));
+    byte[] buffer = new byte[5];
+    int len = 0;
+    while ((len = is.read(buffer)) != -1) {
+        fos.write(buffer, 0, len);
+    }
+    System.out.println("图片下载完成");
+    fos.close();
+    is.close();
+    urlConnection.disconnect();
+}
+```
+
+
+
+# 3. NIO
+
+## 3.1 Java NIO 概述
+
+### 阻塞IO
+
+通常在进行同步I/O操作时，如果读取数据，代码会阻塞直至有可提供读取的数据。同样，写入调用将会阻塞直至数据能够写入。传统的Server/Client模式会基于（TPR：Thread per Request），服务器会为每个客户端请求建立一个线程，由该线程单独负责处理一个客户请求。这种模式带来的一个问题就是线程数量的剧增，大量的线程会增大服务器的开销。大多数的实现为了避免这个问题，都采用了线程池模型，并设置线程池线程的最大数量，这又带来了新的问题，如果线程池中有100个线程，而有100个用户都在进行大文件下载，会导致第101个用户的请求无法及时处理，即便第101个用户只想请求一个几kb大小的页面。传统的Server/Client模式如图所示：
+
+![image-20211020210801147](source/Java-IO流与网络编程/image-20211020210801147-16347352859511.png)
+
+
+
+
+
+### 非阻塞IO（NIO）
+
+NIO中非阻塞I/O采用了基于Reactor模式的工作方式，I/O调用不会被阻塞，相反是注册感兴趣的特定I/O事件，如可读数据到达，新的套接字连接等等，在发生特定事件时，系统再通知我们。NIO中实现非阻塞I/O的核心对象就是Selector，Selector就是注册各种I/O事件地方，而且当我们感兴趣的事件发生时，就是这个对象告诉我们所发生的时间。
+
+![image-20211020211145095](source/Java-IO流与网络编程/image-20211020211145095-16347355066182.png)
+
+当有读或写等任何注册的时间发生时，可以从Selector中获得相应的SelectionKey，同时SelectionKey中可以找到发生的事件和该事件所发生的具体的SelectableChannel，以获得客户端发送过来的数据。
+
+非阻塞指的是IO时间本身不阻塞，但是获取IO事件的select()方法是需要阻塞等待的。区别是阻塞的IO会阻塞IO操作上，NIO阻塞在事件获取上，没有事件就没有IO，从高层次看IO就不阻塞了。也就是说只有IO已经发生那么我们才评估IO是否阻塞，但是select()阻塞的时候IO还没有发生，何谈IO的阻塞呢？NIO的本质是延迟IO操作到真正发生IO的时候，而不是以前的只要IO流打开了就一直等到IO操作。
+
+| IO                      | NIO                           |
+| ----------------------- | ----------------------------- |
+| 面向流(Stream Oriented) | 面向缓冲区（Buffer Oriented） |
+| 阻塞IO（Blocking IO）   | 非阻塞IO（Non Blocking IO）   |
+| 无                      | 选择器（Selectors）           |
+
+Java的NIO由以下几个核心部分组成：
+
+- Channels
+
+  - > NIO中的Channel和 IO中的Stream(流)是差不多一个等级的。只不过Stream是单向的，譬如：**InputStream**，**OutputStream**。而**Channel**是双向的，**即可以用来进行读操作，又可以用来进行写操作**。
+    >
+    > NIO中的Channel的主要实现有：FileChannel，DatagramChannel，SocketChannel和ServerSocketChannel，分别对应文件IO，UDP和TCP（Server和Client）
+
+- Buffers
+
+  - > NIO中的关键实现有：ByteBuffer，CharBuffer，DoubleBuffer，FloatBuffer，IntBuffer，LongBuffer，ShortBuffer，分别对应基本数据类型：byte，char，double，float，int，long，short。
+
+- Selectors
+
+  - > Selector运行单线程处理多个Channel，如果你的应用打开了多个通道，但每个连接的流量都很低，使用Selector就会很方便。例如在一个聊天服务器中。要使用Selector，得向Selector注册Channel，然后调用它的select()方法。这个方法就会一直阻塞到某个注册的通道有事件就绪。一旦这个方法返回，线程就可以处理这些事件，事件的例子就如新的连接进行，数据接收等。
+
+虽然Java NIO中除此之外还有很多类和组件，但Channel，Buffer和Selector构成了核心的API。其他组件，如Pipe和FileLock，只不过是与三个核心组件共同使用的工具类。
+
+## 3.2 Channel
+
+
+
+
+
+## 3.3  Buffer
 
 
 
 
 
 
+
+
+
+## 3.4 Selector
+
+
+
+
+
+
+
+
+
+
+
+## 3.5 Pipe和FileLock
+
+
+
+
+
+
+
+
+
+## 3.6 其他
