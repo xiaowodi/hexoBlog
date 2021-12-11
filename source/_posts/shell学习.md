@@ -6,11 +6,11 @@
 
 ### 1. 标准输入输出
 
-| 设备   | 设备文件名  | 文件描述符 | 类型         |
-| ------ | ----------- | ---------- | ------------ |
-| 键盘   | /dev/stdin  | 0          | 标准输入     |
-| 显示器 | /dev/sdtout | 1          | 标准输出     |
-| 显示器 | /dev/sdterr | 2          | 标准错误输出 |
+| 设备   | 设备文件名    | 文件描述符 | 类型         |
+| ------ | ------------- | ---------- | ------------ |
+| 键盘   | `/dev/stdin`  | 0          | 标准输入     |
+| 显示器 | `/dev/sdtout` | 1          | 标准输出     |
+| 显示器 | `/dev/sdterr` | 2          | 标准错误输出 |
 
 ### 2. 输出重定向
 
@@ -450,6 +450,387 @@ gg=$[$aa+$bb]
 
 ### 变量测试 与 内容替换
 
+| 变量置换方式 | 变量y没有设置                  | 变量y为空值                 | 变量y设置值 |
+| ------------ | ------------------------------ | --------------------------- | ----------- |
+| x=${y-新值}  | x= 新值                        | x 为空（`x="" # ""为空值`） | x=$y        |
+| x=${y:-新值} | x= 新值                        | x= 新值                     | x=$y        |
+| x=${y+新值}  | x 为空                         | x= 新值                     | x=新值      |
+| x=${y:+新值} | x 为空                         | x 为空                      | x=新值      |
+| x=${y=新值}  | x= 新值                        | x 为空                      | x=$y        |
+| y= 新值      | y 值不变                       | y值不变                     |             |
+| x=${y:=新值} | x= 新值                        | X= 新值                     | x=$y        |
+| y= 新值      | y= 新值                        | y值不变                     |             |
+| x=${y?新值}  | 新值输出到标准错误输出（屏幕） | x 为空                      | x=$y        |
+| x=${y:?新值} | 新值输出到标准错误输出         | 新值输出到标准错误输出      | x=$y        |
+
+## 环境变量配置文件
+
+### :bulb:source 命令
+
+` source 配置文件`
+
+`. 配置文件` 和`source 配置文件`作用一致。
+
+### 环境变量配置文件简介
+
+> 环境变量配置文件中主要是定义对系统的操作环境生效的系统默认环境变量，比如：`PATH`,`HISTSIZE`,`PS1`,`HOSTNAME`等默认环境变量
+
+- `/etc/profile`
+- `/etc/profile.d/*.sh`
+- `/etc/bashrc`
+
+<font color=green>上述三个`etc`目录下的三个配置文件对所有登录linux系统的用户全都生效</font>
+
+- `~/.bash_profile`
+- `~/.bashrc`
+
+上述两个文件，只对当前登录用户生效
+
+**配置文件的调用顺序**
+
+![环境变量文件调用顺序](source/shell学习/环境变量文件调用顺序-1639209622414.png)
+
+
+
+
+
+### 环境变量配置文件作用
+
+#### :butterfly:`/etc/profile`的作用
+
+- USER变量
+- LOGNAME变量
+- MAIL变量
+- PATH变量
+- HOSTNAME变量
+- HISTSIZE变量
+- umask：系统默认权限
+- 调用`/etc/profile.d/*.sh`
+
+
+
+### 其他配置文件和登录信息
+
+#### 注销时生效的配置文件
+
+`~/.bash_logout`
+
+#### 历史命令保存文件
+
+`~/.bash_history`
+
+
+
+#### Shell 登录信息
+
+**本地终端欢迎信息：`/etc/issue`**
+
+| 转义符 | 作用                             |
+| ------ | -------------------------------- |
+| `\d`   | 显示当前系统日期                 |
+| `\s`   | 显示操作系统名称                 |
+| `\l`   | 显示登录的终端号，这个比较常用   |
+| `\m`   | 显示硬件体系结构，如i386，i686等 |
+| `\n`   | 显示主机名                       |
+| `\o`   | 显示域名                         |
+| `\r`   | 显示内核版本                     |
+| `\t`   | 显示当前系统时间                 |
+| `\u`   | 显示当前登录用户的序列号         |
+
+**远程终端欢迎信息： `/etc/issue.net`**
+
+- 转义符在`/etc/issue.net`文件中不能使用
+- 是否显示此欢迎信息，有ssh的配置文件`/etc/ssh/sshd_config`决定，加入`Banner /etc/issue.net`行才能显示（记得重启SSH服务）
+
+**登录后 欢迎 信息： `/etc/motd`**
+
+不管是本地登录，还是远程登录，都可以显示此欢迎信息
+
+
+
+## 正则表达式
+
+- 正则表达式用来在文件中匹配符合条件的字符串，正则是<font color=blue>包含匹配</font>。`grep, awk, sed`等命令可以支持正则表达式。
+- 通配符用来匹配符合条件的文件名，通配符是<font color=blue>完全匹配</font>。`ls, find, cp`这些命令不支持正则表达式，所以只能使用Shell自己的通配符来进行匹配了。
+
+|     字符      | 描述                                                         |
+| :-----------: | ------------------------------------------------------------ |
+|      `\`      | 转义符，将特殊字符无效，仅当成普通的字符来使用               |
+|      `^`      | 匹配输入字符串的开始位置。如果设置了RegExp对象的Multiline属性，^也匹配“\n”或“\r”之后的位置。 |
+|      `$`      | 匹配输入字符串的结束位置。如果设置了RegExp对象的Multiline属性，$也匹配“\n”或“\r”之前的位置。 |
+|      `*`      | 匹配前面的子表达式零次或多次。例如，zo*能匹配“z”以及“zoo”。*等价于{0,}。 |
+|      `+`      | 匹配前面的子表达式一次或多次。例如，“zo+”能匹配“zo”以及“zoo”，但不能匹配“z”。+等价于{1,}。 |
+|      `?`      | 匹配前面的子表达式零次或一次。例如，“do(es)?”可以匹配“do”或“does”中的“do”。?等价于{0,1}。 |
+|     `{n}`     | *n* 是一个非负整数。匹配确定的*n* 次。例如，“o{2}”不能匹配“Bob”中的“o”，但是能匹配“food”中的两个o。 |
+|    `{n,}`     | *n* 是一个非负整数。至少匹配*n* 次。例如，“o{2,}”不能匹配“Bob”中的“o”，但能匹配“foooood”中的所有o。“o{1,}”等价于“o+”。“o{0,}”则等价于“o*”。 |
+|    `{n,m}`    | *m* 和*n* 均为非负整数，其中*n* <=*m* 。最少匹配*n* 次且最多匹配*m* 次。例如，“o{1,3}”将匹配“fooooood”中的前三个o。“o{0,1}”等价于“o?”。请注意在逗号和两个数之间不能有空格。 |
+|      `?`      | 当该字符紧跟在任何一个其他限制符(*,+,?,{*n* },{*n* ,},{*n* ,*m* })后面时，匹配模式是非贪婪的。非贪婪模式尽可能少的匹配所搜索的字符串，而默认的贪婪模式则尽可能多的匹配所搜索的字符串。例如，对于字符串“oooo”，“o+?”将匹配单个“o”，而“o+”将匹配所有“o”。 |
+|      `.`      | 匹配除“\*n* ”之外的任何单个字符。要匹配包括“\*n* ”在内的任何字符，请使用像“[.\*n* ]”的模式。 |
+|  `(pattern)`  | 匹配pattern并获取这一匹配。所获取的匹配可以从产生的Matches集合得到，在VBScript中使用SubMatches集合，在JScript中则使用$0…$9属性。要匹配圆括号字符，请使用“\(”或“\)”。 |
+| `(?:pattern)` | 匹配pattern但不获取匹配结果，也就是说这是一个非获取匹配，不进行存储供以后使用。这在使用“或”字符(\|)来组合一个模式的各个部分是很有用。例如，“industr(?:y\|ies)就是一个比”industry\|industries'更简略的表达式。 |
+| `(?=pattern)` | 正向预查，在任何匹配pattern的字符串开始处匹配查找字符串。这是一个非获取匹配，也就是说，该匹配不需要获取供以后使用。例如，“Windows(?=95\|98\|NT\|2000)”能匹配“Windows2000”中的“Windows”，但不能匹配 “Windows3.1”中的“Windows”。预查不消耗字符，也就是说，在一个匹配发生后，在最后一次匹配之后立即开始下一次匹配的搜索，而不是从包含预查的字符之后开始。 |
+| `(?!pattern)` | 负向预查，在任何不匹配pattern的字符串开始处匹配查找字符串。这是一个非获取匹配，也就是说，该匹配不需要获取供以后使用。例如 “Windows(?!95\|98\|NT\|2000)”能匹配“Windows3.1”中的“Windows”，但不能匹配“Windows2000”中的“Windows”。预查不消耗字符，也就是说，在一个匹配发生后，在最后一次匹配之后立即开始下一次匹配的搜索，而不是从包含预查的字符之后开始 |
+|     `x|y`     | 匹配x或y。例如，“z\|food”能匹配“z”或“food”。“(z\|f)ood”则匹配“zood”或“food”。 |
+|    `[xyz]`    | 字符集合。匹配所包含的任意一个字符。例如，“[abc]”可以匹配“plain”中的“a”。 |
+|   `[^xyz]`    | 负值字符集合。匹配未包含的任意字符。例如，“[^abc]”可以匹配“plain”中的“p”。 |
+|    `[a-z]`    | 字符范围。匹配指定范围内的任意字符。例如，“[a-z]”可以匹配“a”到“z”范围内的任意小写字母字符。 |
+|   `[^a-z]`    | 负值字符范围。匹配任何不在指定范围内的任意字符。例如，“[^a-z]”可以匹配任何不在“a”到“z”范围内的任意字符。 |
+|     `\b`      | 匹配一个单词边界，也就是指单词和空格间的位置。例如，“er\b”可以匹配“never”中的“er”，但不能匹配“verb”中的“er”。 |
+|     `\B`      | 匹配非单词边界。“er\B”能匹配“verb”中的“er”，但不能匹配“never”中的“er”。 |
+|     `\cx`     | 匹配由x指明的控制字符。例如，\cM匹配一个Control-M或回车符。x的值必须为A-Z或a-z之一。否则，将c视为一个原义的“c”字符。 |
+|     `\d`      | 匹配一个数字字符。等价于[0-9]。                              |
+|     `\D`      | 匹配一个非数字字符。等价于[^0-9]。                           |
+|     `\f`      | 匹配一个换页符。等价于\x0c和\cL。                            |
+|     `\n`      | 匹配一个换行符。等价于\x0a和\cJ。                            |
+|     `\r`      | 匹配一个回车符。等价于\x0d和\cM。                            |
+|     `\s`      | 匹配任何空白字符，包括空格、制表符、换页符等等。等价于[\f\n\r\t\v]。 |
+|     `\S`      | 匹配任何非空白字符。等价于[^\f\n\r\t\v]。                    |
+|     `\t`      | 匹配一个制表符。等价于\x09和\cI。                            |
+|     `\v`      | 匹配一个垂直制表符。等价于\x0b和\cK。                        |
+|     `\w`      | 匹配包括下划线的任何单词字符。等价于“[A-Za-z0-9_]”。         |
+|     `\W`      | 匹配任何非单词字符。等价于“[^A-Za-z0-9_]”。                  |
+|     `\xn`     | 匹配*n* ，其中*n* 为十六进制转义值。十六进制转义值必须为确定的两个数字长。例如，“\x41”匹配“A”。“\x041”则等价于“\x04”&“1”。正则表达式中可以使用ASCII编码。. |
+|    `\num`     | 匹配*num* ，其中*num* 是一个正整数。对所获取的匹配的引用。例如，“(.)\1”匹配两个连续的相同字符。 |
+|      `n`      | 标识一个八进制转义值或一个向后引用。如果\*n* 之前至少*n* 个获取的子表达式，则*n* 为向后引用。否则，如果*n* 为八进制数字(0-7)，则*n* 为一个八进制转义值。 |
+|     `\nm`     | 标识一个八进制转义值或一个向后引用。如果\*nm* 之前至少有*nm* 个获得子表达式，则*nm* 为向后引用。如果\*nm* 之前至少有*n* 个获取，则*n* 为一个后跟文字*m* 的向后引用。如果前面的条件都不满足，若*n* 和*m* 均为八进制数字(0-7)，则\*nm* 将匹配八进制转义值*nm* 。 |
+|    `\nml`     | 如果*n* 为八进制数字(0-3)，且*m和l* 均为八进制数字(0-7)，则匹配八进制转义值*nm* l。 |
+|     `\un`     | 匹配*n* ，其中*n* 是一个用四个十六进制数字表示的Unicode字符。例如，\u00A9匹配版权符号（©）。 |
+
+```shell
+grep "a*" file		# 没有任何意义，匹配所有内容，包括空白行
+grep "aa*" file		# 匹配至少包含一个a的行
+grep "aaa*" file	# 匹配最少包含两个连续a的字符串
+
+grep "s..d" test.txt			# 匹配在s和d这两个字母之间一定有两个字符的单词
+grep "s.*d" test.txt			# 匹配在s和d之间有任意字符
+grep ".*"	text.txt			# 匹配所有内容
+
+grep "^M" text.txt				# 匹配以大写M开头的行
+grep "n$" text.txt				# 匹配以小写n结尾的行
+grep -n "^$" text.txt			# 会匹配空白行  (-n选项是为了输出具体的行号)
+
+grep "s[ao]id" text.txt			# 匹配s和i字母中，要么是a，要么是o
+grep "[0-9]" text.txt			# 匹配任意一个数字
+grep "^[a-z]" text.txt			# 匹配用小写字母开头的行
+
+grep "\.$" text.txt				# 匹配以. 结尾的行
+
+grep "a\{3\}" text.txt			# 匹配a字母连续出现三次的字符串
+grep "[0-9]\{3\}" text.txt		# 匹配包含连续的三个数字的字符串
+```
+
+
+
+
+
+## 字符截取命令
+
+grep是提取文本中的行，而cut和awk是提取文本中的列。
+
+### :black_heart:`cut` 字段提取命令
+
+```shell
+cut [选项] 文件名
+选项：
+	-f	列号:			提取第几列
+	-d  分隔符：	   按照指定分隔符分割列
+yu@PC:~/Files$ cat student.txt 
+ID Name gender Mark
+1 Liming M 86
+2 Sc M 90
+3 Gao F 83
+yu@PC:~/Files$ cut -d' ' -f 2 student.txt 
+Name
+Liming
+Sc
+Gao
+yu@PC:~/Files$ 
+yu@PC:~/Files$ cut -d' ' -f 0 student.txt 
+cut: fields are numbered from 1
+# 上述命令说明，cut截取的列号 起始是从1开始的
+yu@PC:~/Files$ cut -d' ' -f 2,3 student.txt  # 列号可以指定多列
+Name gender
+Liming M
+Sc M
+Gao F
+yu@PC:~/Files$ cut -d' ' -f 2-4 student.txt # 列号可以指定连续的列
+Name gender Mark
+Liming M 86
+Sc M 90
+Gao F 83
+yu@PC:~/Files$ 
+```
+
+实际的例子：
+
+```shell
+# 假设之前批量添加了一批用户，现在需要找出这些批量添加的用户名都有哪些
+root@PC:/home/yu/Files# useradd user1
+root@PC:/home/yu/Files# useradd user2
+root@PC:/home/yu/Files# useradd user3
+root@PC:/home/yu/Files# cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:114::/run/uuidd:/usr/sbin/nologin
+tcpdump:x:108:115::/nonexistent:/usr/sbin/nologin
+avahi-autoipd:x:109:116:Avahi autoip daemon,,,:/var/lib/avahi-autoipd:/usr/sbin/nologin
+usbmux:x:110:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+rtkit:x:111:117:RealtimeKit,,,:/proc:/usr/sbin/nologin
+dnsmasq:x:112:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin
+cups-pk-helper:x:113:120:user for cups-pk-helper service,,,:/home/cups-pk-helper:/usr/sbin/nologin
+speech-dispatcher:x:114:29:Speech Dispatcher,,,:/run/speech-dispatcher:/bin/false
+avahi:x:115:121:Avahi mDNS daemon,,,:/var/run/avahi-daemon:/usr/sbin/nologin
+kernoops:x:116:65534:Kernel Oops Tracking Daemon,,,:/:/usr/sbin/nologin
+saned:x:117:123::/var/lib/saned:/usr/sbin/nologin
+nm-openvpn:x:118:124:NetworkManager OpenVPN,,,:/var/lib/openvpn/chroot:/usr/sbin/nologin
+hplip:x:119:7:HPLIP system user,,,:/run/hplip:/bin/false
+whoopsie:x:120:125::/nonexistent:/bin/false
+colord:x:121:126:colord colour management daemon,,,:/var/lib/colord:/usr/sbin/nologin
+geoclue:x:122:127::/var/lib/geoclue:/usr/sbin/nologin
+pulse:x:123:128:PulseAudio daemon,,,:/var/run/pulse:/usr/sbin/nologin
+gnome-initial-setup:x:124:65534::/run/gnome-initial-setup/:/bin/false
+gdm:x:125:130:Gnome Display Manager:/var/lib/gdm3:/bin/false
+yu:x:1000:1000:YU,,,:/home/yu:/bin/bash
+systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+sshd:x:126:65534::/run/sshd:/usr/sbin/nologin
+user1:x:1001:1001:,,,:/home/user1:/bin/bash
+user2:x:1002:1002:,,,:/home/user2:/bin/bash
+user3:x:1003:1003:,,,:/home/user3:/bin/bash
+
+# 开始筛选出批量添加的用户名
+root@PC:/home/yu/Files# grep "/bin/bash" /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+yu:x:1000:1000:YU,,,:/home/yu:/bin/bash
+user1:x:1001:1001:,,,:/home/user1:/bin/bash
+user2:x:1002:1002:,,,:/home/user2:/bin/bash
+user3:x:1003:1003:,,,:/home/user3:/bin/bash
+root@PC:/home/yu/Files# grep "/bin/bash" /etc/passwd | grep -v "root"  #去掉包含root的行
+yu:x:1000:1000:YU,,,:/home/yu:/bin/bash
+user1:x:1001:1001:,,,:/home/user1:/bin/bash
+user2:x:1002:1002:,,,:/home/user2:/bin/bash
+user3:x:1003:1003:,,,:/home/user3:/bin/bash
+root@PC:/home/yu/Files# grep "/bin/bash" /etc/passwd | grep -v "root" | cut -d ':' -f 1
+yu
+user1
+user2
+user3
+# cut命令 指定分隔符:, 提取第一列用户名的行
+```
+
+**`cut`命令的局限性**
+
+`df -h | cut -d " " -f 1,3`
+
+```shell
+root@PC:/home/yu/Files# df -h
+文件系统        容量  已用  可用 已用% 挂载点
+udev            3.9G     0  3.9G    0% /dev
+tmpfs           794M  1.8M  792M    1% /run
+/dev/sda5        49G  7.8G   39G   17% /
+tmpfs           3.9G     0  3.9G    0% /dev/shm
+tmpfs           5.0M  4.0K  5.0M    1% /run/lock
+tmpfs           3.9G     0  3.9G    0% /sys/fs/cgroup
+/dev/loop0      128K  128K     0  100% /snap/bare/5
+/dev/loop1       55M   55M     0  100% /snap/core18/1705
+/dev/loop2       56M   56M     0  100% /snap/core18/2253
+/dev/loop4       63M   63M     0  100% /snap/gtk-common-themes/1506
+/dev/loop3      241M  241M     0  100% /snap/gnome-3-34-1804/24
+/dev/loop5       62M   62M     0  100% /snap/core20/1270
+/dev/loop7       66M   66M     0  100% /snap/gtk-common-themes/1519
+/dev/loop6      219M  219M     0  100% /snap/gnome-3-34-1804/77
+/dev/loop9       43M   43M     0  100% /snap/snapd/14066
+/dev/loop8       50M   50M     0  100% /snap/snap-store/433
+/dev/loop10      44M   44M     0  100% /snap/snapd/14295
+/dev/loop11      55M   55M     0  100% /snap/snap-store/558
+/dev/sda1       511M  4.0K  511M    1% /boot/efi
+tmpfs           794M   24K  794M    1% /run/user/125
+tmpfs           794M  4.0K  794M    1% /run/user/1000
+root@PC:/home/yu/Files# df -h | grep sda5 | cut -d " " -f 5 
+# 这里就有一个问题，cut命令是一个忠实的执行者， 分隔符如果是空格， 那么-d后面指定几个空格，就会按照几个空格来进行分割，但是有的分割不一定是固定数量的空格，就此cut命令有一定的局限性
+```
+
+
+
+### :black_heart:`printf` 命令
+
+学习awk命令的前提，`printf`命令会格式化输出。
+
+> `printf '输出类型输出格式' 输出内容`
+>
+> 输出类型：
+>
+> - `%ns`	: 输出字符串。n是数字指代输出几个字符
+> - `%ni` : 输出整数。n是数字指代输出几个数字
+> - ``%m.nf `: 输出浮点数。 m和n是数字，指代输出的整数位数和小数位数。如`%8.2f`代表共输出8位数，其中2位是小数，6位是整数
+>
+> 输出格式
+>
+> - `\a`：输出警告声音
+> - `\b`：输出退格键，也就是Backspace
+> - `\f`：清除屏幕
+> - `\n`：换行
+> - `\r`：回车，也就是Enter键
+> - `\t`：水平输出退格键，也就是Tap键
+> - `\v`：垂直输出退格键，也就是Tap键
+
+```shell
+root@PC:/home/yu/Files# printf '%s %s %s\n\a' 1 2 3 4 5 6 
+1 2 3
+4 5 6
+# printf 命令也可以输出文件内容，但是需要匹配执行命令的特殊符来使用，无法配合管道来使用
+printf '%s' $(cat test.txt)
+# printf 输出的内容 不像 cat命令那样会进行漂亮的格式化
+```
+
+:bell:<font color=red>那为什么还需要学习`printf`命令呢？</font>
+
+> 因为awk命令中，**不能**直接调用系统命令`cat`，**也不能**直接调用系统命令`echo`，但是能调用系统命令`print和printf`命令。
+
+在`awk`命令中，输出支持`print`和`printf`命令
+
+- `print`：print会在每个输出之后自动加入一个换行符（Linux默认没有print命令，只有在awk命令中才有print）
+- `printf`：printf是标准格式输出命令，并不会自动加入换行符，如果需要换行，需要手工假如换行符
+
+
+
+### :black_heart:`awk` 命令
+
+`cut`命令能够实现的字符串截取列，`awk`命令都可以实现，但是`awk`命令要比`cut`命令复杂的多，所以在实际使用中，`cut`命令能够实现了，就是用简单的`cut`命令来实现，`cut`命令不能实现的，就是用`awk`命令来实现。
+
+[Linux awk 命令详解 参考](https://www.cnblogs.com/baichunyu/p/15257904.html)
+
+**基础用法**
+
+```shell
+awk [选项] '匹配条件1 {脚本命令11;脚本命令12;....} 匹配条件2 {脚本命令21;脚本命令22;....}' 文件名
+```
+
+
+
+`awk`命令会对文件中的每一行都会执行一遍`awk`命令中指定的脚本
 
 
 
@@ -457,6 +838,11 @@ gg=$[$aa+$bb]
 
 
 
+### :black_heart:`sed` 命令
+
+
+
+## 字符处理命令
 
 
 
@@ -464,7 +850,13 @@ gg=$[$aa+$bb]
 
 
 
+## 条件判断
 
+
+
+
+
+## 流程控制
 
 
 
