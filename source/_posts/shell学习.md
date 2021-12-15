@@ -854,7 +854,117 @@ ID	Name	Average
 1	Liming	87.66
 2	Sc	85.66
 3	Gao	91.66
+```
 
+:right_anger_bubble:`$0` **表示当前内容的一整行**
+
+截取 `df -h`
+
+```shell
+[hadoop@hadoop102 Files]$ df -h | awk '{print $1 "\t" $2 "\t" $3 "\t" $6}'
+文件系统	容量	已用	挂载点
+devtmpfs	3.8G	0	/dev
+tmpfs	3.9G	0	/dev/shm
+tmpfs	3.9G	21M	/run
+tmpfs	3.9G	0	/sys/fs/cgroup
+/dev/mapper/centos-root	46G	19G	/
+/dev/sda1	1014M	233M	/boot
+tmpfs	781M	0	/run/user/0
+tmpfs	781M	0	/run/user/1000
+```
+
+:baby_chick:小需求：提取df命令显示后的磁盘已用百分比的具体值
+
+```shell
+[hadoop@hadoop102 Files]$ df -h
+文件系统                 容量  已用  可用 已用% 挂载点
+devtmpfs                 3.8G     0  3.8G    0% /dev
+tmpfs                    3.9G     0  3.9G    0% /dev/shm
+tmpfs                    3.9G   29M  3.8G    1% /run
+tmpfs                    3.9G     0  3.9G    0% /sys/fs/cgroup
+/dev/mapper/centos-root   46G   19G   27G   42% /
+/dev/sda1               1014M  233M  782M   23% /boot
+tmpfs                    781M     0  781M    0% /run/user/0
+tmpfs                    781M     0  781M    0% /run/user/1000
+```
+
+例如，提取centos-root 已用的`23%`中的23
+
+```shell
+[hadoop@hadoop102 Files]$ df -h | grep centos | awk '{print $5}' | awk -F "%" '{print $1}'
+42
+```
+
+#### BEGIN条件
+
+awk中可以通过BEGIN关键字，来实现在执行后续脚本命令**之前**先执行一些操作，换句话说就是**BEGIN**后面紧接着的脚本在开始真正读取数据之前先被执行，而且不管数据内容有多少行，**BEGIN**后面紧跟着的命令仅执行一遍。
+
+```shell
+[hadoop@hadoop102 Files]$ df -h | awk 'BEGIN{print "最先执行"} {print $5}'
+最先执行
+已用%
+0%
+0%
+1%
+0%
+42%
+23%
+0%
+0%
+```
+
+通过**BEGIN**关键字设置**awk**的**分隔符FS变量**
+
+```shell
+[hadoop@hadoop102 Files]$ cat /etc/passwd | awk 'BEGIN{FS=":"} {print $1 "\t" $7}'
+root	/bin/bash
+bin	/sbin/nologin
+daemon	/sbin/nologin
+adm	/sbin/nologin
+lp	/sbin/nologin
+sync	/bin/sync
+shutdown	/sbin/shutdown
+halt	/sbin/halt
+mail	/sbin/nologin
+operator	/sbin/nologin
+games	/sbin/nologin
+ftp	/sbin/nologin
+nobody	/sbin/nologin
+systemd-network	/sbin/nologin
+```
+
+#### END条件
+
+**END**条件后面跟着的脚本是在所有数据都处理完之后最后执行
+
+```shell
+awk 'BEGIN{FS=":"} END{print "数据处理完成！"} {print $1 "\t" $2}'
+```
+
+
+
+#### 关键运算符
+
+比如有如下`student.txt`数据，查询出平均成绩大于等于86分的学生姓名
+
+| ID   | Name   | PHP  | Linux | MySql | Average |
+| ---- | ------ | ---- | ----- | ----- | ------- |
+| 1    | Liming | 82   | 95    | 86    | 87.66   |
+| 2    | Sc     | 74   | 96    | 87    | 85.66   |
+| 3    | Gao    | 99   | 83    | 93    | 91.66   |
+
+```shell
+cat student.txt | grep -v Name | awk '$6>=86{print $2}'
+```
+
+```shell
+[hadoop@hadoop102 Files]$ cat student.txt | grep -v Name
+1	Liming	82	95	86	87.66
+2	Sc	74	96	87	85.66
+3	Gao	99	83	93	91.66
+[hadoop@hadoop102 Files]$ cat student.txt | grep -v Name | awk '$6>=86{print $2}'
+Liming
+Gao
 ```
 
 
@@ -863,7 +973,19 @@ ID	Name	Average
 
 
 
+
+
+
+
+
+
 ### :black_heart:`sed` 命令
+
+
+
+
+
+
 
 
 
