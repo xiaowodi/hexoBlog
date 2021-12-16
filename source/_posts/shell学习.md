@@ -1,3 +1,11 @@
+---
+title: Linux 学习笔记
+---
+
+[TOC]
+
+
+
 # Shell学习笔记
 
 
@@ -981,17 +989,118 @@ Gao
 
 ### :black_heart:`sed` 命令
 
+`sed`是一种几乎包括在所有Unix平台（包括Linux）的轻量级流编辑器。sed主要是用来将数据进行选取，替换，删除，新增的命令，它一次处理一行内容。处理时，把当前处理的行存储在临时缓冲区中，称为“模式空间”（pattern space），接着用sed命令处理缓冲区中的内容，处理完成后，把缓冲区的内容送往屏幕。接着处理下一行，这样不断重复，直到文件末尾。文件内容并没有 改变，除非你使用重定向存储输出。Sed主要用来自动编辑一个或多个文件；简化对文件的反复操作；编写转换程序等。
 
+```shell
+[root@PC ~]# sed [-nefr] [动作]
+选项与参数：
+-n ：使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到终端上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。
+-e ：直接在命令列模式上进行 sed 的动作编辑,也就是允许对输入数据应用多条sed命令；
+-f ：直接将 sed 的动作写在一个文件内， -f filename 则可以运行 filename 内的 sed 动作；
+-r ：sed 的动作支持的是延伸型正规表示法的语法。(默认是基础正规表示法语法)
+-i ：直接修改读取的文件内容，而不是输出到终端。
 
+动作说明： [n1[,n2]]function
+n1, n2 ：不见得会存在，一般代表『选择进行动作的行数』，举例来说，如果我的动作是需要在 10 到 20 行之间进行的，则[ 10,20[动作行为] ]
 
+function：
+a ：新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)～
+c ：取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行！
+d ：删除，因为是删除啊，所以 d 后面通常不接任何内容；
+i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；
+p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～
+s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s/old/new/g 就是啦！
+```
 
+简单例子：
 
+```shell
+yu@PC:~/Files$ sed '2p' student2.txt 
+ID	Name	PHP	Linux	MySql	Average
+1	Liming	82	95	86	87.66
+1	Liming	82	95	86	87.66
+2	Sc	74	96	87	85.66
+3	Gao	99	83	93	91.66
+
+# 添加 -n选项后， 只有被sed处理的那一行才会被输出
+yu@PC:~/Files$ sed -n '2p' student2.txt 
+1	Liming	82	95	86	87.66
+
+# -d 删除行， 但是不影响源文件， 下面的例子是删除 第1到第3行
+yu@PC:~/Files$ sed '1,3d' student2.txt 
+3	Gao	99	83	93	91.66
+
+# -a 内容追加， 下述例子：在student2.txt	文件内容的第2行后插入hello
+yu@PC:~/Files$ sed '2a hello' student2.txt 
+ID	Name	PHP	Linux	MySql	Average
+1	Liming	82	95	86	87.66
+hello
+2	Sc	74	96	87	85.66
+3	Gao	99	83	93	91.66
+# 下述例子：在student2.txt	文件内容的第2行前插入 4:this is new line
+yu@PC:~/Files$ sed '2i 4:this is new line' student2.txt 
+ID	Name	PHP	Linux	MySql	Average
+4:this is new line
+1	Liming	82	95	86	87.66
+2	Sc	74	96	87	85.66
+3	Gao	99	83	93	91.66
+# c 替换
+yu@PC:~/Files$ sed '1c no title' student2.txt 
+no title
+1	Liming	82	95	86	87.66
+2	Sc	74	96	87	85.66
+3	Gao	99	83	93	91.66
+# s 字符串替换  sed '3s/74/98/g'  第3行的74 换成 98
+yu@PC:~/Files$ sed '3s/74/98/g' student2.txt 
+ID	Name	PHP	Linux	MySql	Average
+1	Liming	82	95	86	87.66
+2	Sc	98	96	87	85.66
+3	Gao	99	83	93	91.66
+# -i sed操作的数据直接写入文件， -i选项会影响源文件
+sed -i '3s/74/98/g' student2.txt
+# 同时把Liming 和 Gao 替换成空格
+sed -e 's/Liming//g ; s/Gao//g' student2.txt
+```
 
 
 
 ## 字符处理命令
 
+### `Sort`命令
 
+```shell
+sort [选项] 文件名
+选项：
+	-f			忽略大小写
+	-n			以数值型进行排序，默认使用字符串型排序
+	-r			反向排序
+	-t			指定分隔符，默认分隔符是制表符
+	-k n[,m]	按照指定的字段范围排序。从第n字段开始，m字段结束（默认到行尾）
+```
+
+**简单使用**
+
+```shell
+# 指定分隔符，用第三个字段开头，第3字段结尾排序，就是只用第三字段排序
+sort -t ":" -k 3,3 /etc/passwd
+# 默认按照字符的顺序，比较第一个字符，如果相同再比较第二个字符， -n选项指定按照数值进行排序
+sort -n -t ":" -k 3,3 /etc/passwd
+```
+
+
+
+### `wc` 命令
+
+```shell
+wc [选项] 文件名
+选项：
+	-l			只统计行数
+	-w			只统计单词数
+	-m			值统计字符数
+	
+yu@PC:~/Files$ wc /etc/passwd
+  47   82 2775 /etc/passwd   # 表示 有47行， 82个单词， 2775个字符， 文件
+```
 
 
 
@@ -1001,35 +1110,436 @@ Gao
 
 
 
+### 按照文件类型进行判断
 
+| 测试选项    | 作用                                                         |
+| ----------- | ------------------------------------------------------------ |
+| -b 文件     | 判断该文件是否存在，并且是否为块设备文件（是块设备文件为真） |
+| -c 文件     | 判断该文件是否存在，并且是否为字符设备文件（是字符设备文件为真） |
+| **-d 文件** | **判断该文件是否存在， 并且是否为目录文件（是目录为真）**    |
+| **-e 文件** | **判断该文件是否存在（存在为真）**                           |
+| **-f 文件** | **判断该文件是否存在，并且是否为普通文件（是普通文件为真）** |
+| -L 文件     | 判断该文件是否存在，并且是否为符号链接文件（是符号链接文件为真） |
+| -p 文件     | 判断该文件是否存在，并且是否为管道文件（是管道文件为真）     |
+| -s 文件     | 判断该文件是否存在，并且是否为非空（非空为真）               |
+| -S 文件     | 判断该文件是否存在，并且是否为套接字文件（是套接字文件为真） |
+
+**使用格式**
+
+- `test -e /root/install.log`
+
+  - ```shell
+    test -e /root/install.log
+    echo $?   # 查看上一条命令的输出结果， 返回0表示命令执行正确， 非零表示不正确
+    
+    
+    yu@PC:~/Files$ test -e /root
+    yu@PC:~/Files$ echo $? 
+    0
+    ```
+
+- `[ -e /root/install.log ]` 
+
+  - 上述这种格式，常用与shell脚本中，作为条件进行判断
+
+但是虽然判断完是否存在之后，还需要$?去查看该命令的输出结果，这样使用也不是很方便，如何解决？？？？
+
+这时候，之前所学的`&&` 和 `||` 就派上用场了
+
+```shell
+yu@PC:~/Files$ [ -d /root ] && echo "yes" || echo "no"
+yes
+yu@PC:~/Files$ [ -d /root/sdgfdsgfd ] && echo "yes" || echo "no"
+no
+```
+
+### 按照文件权限进行判断
+
+| 测试选项    | 作用                                                         |
+| ----------- | ------------------------------------------------------------ |
+| **-r 文件** | **判断该文件是否存在，并且是否改文件拥有读权限（有读权限为真）** |
+| **-w 文件** | **判断该文件是否存在，并且是否该文件拥有写权限（有写权限为真）** |
+| **-x 文件** | **判断该文件是否存在，并且是否该文件拥有执行权限（有执行权限为真）** |
+| -u 文件     | 判断该文件是否存在，并且是否该文件拥有SUID权限（有SUID权限为真） |
+| -g 文件     | 判断该文件是否存在，并且是否该文件拥有SGID权限（有SGID权限为真） |
+| -k 文件     | 判断该文件是否存在，并且是否该文件用有SBit权限（有SBit权限为真） |
+
+上述判断文件权限不会区分是那个用户下的，是属主，属组，还是其他用户。
+
+### 两个文件之间进行比较
+
+| 测试选项        | 作用                                                         |
+| --------------- | ------------------------------------------------------------ |
+| 文件1 -nt 文件2 | 判断文件1的修改时间是否比文件2的新（如果新则为真）           |
+| 文件1 -ot 文件2 | 判断文件1的修改时间是否比文件2的旧（如果旧则为真）           |
+| 文件1 -ef 文件2 | 判断文件1是否和文件2的Inode号一致，可以理解为两个文件是否为同一个文件。这个判断用于判断硬链接是很的方法。 |
+
+
+
+### 两个整数之间的比较
+
+| 测试选项          | 作用                       |
+| ----------------- | -------------------------- |
+| `整数1 -eq 整数2` | 判断整数1是否和整数2相等   |
+| `整数1 -ne 整数2` | 判断整数1是否和整数2不相等 |
+| `整数1 -gt 整数2` | 判断整数1是否大于整数2     |
+| `整数1 -lt 整数2` | 判断整数1是否小于整数2     |
+| `整数1 -ge 整数2` | 判断整数1是否大于等于整数2 |
+| `整数1 -le 整数2` | 判断整数1是否小于等于整数2 |
+
+
+
+### 字符串的判断
+
+| 测试选项             | 作用                                                   |
+| -------------------- | ------------------------------------------------------ |
+| -z 字符串 （zero）   | 判断字符串是否为空                                     |
+| -n 字符串            | 判断字符串是否为非空（可以用来判断输入的参数是否非空） |
+| 字符串1  ==  字符串2 | 判断两个字符串是否相等                                 |
+| 字符串1  !=  字符串2 | 判断两个字符串是否不相等                               |
+
+```shell
+yu@PC:~/Files$ [ "$aa" == "$bb" ] && echo "yes" || echo "no"
+no
+```
+
+### 多重条件判断
+
+| 测试选项       | 作用                                             |
+| -------------- | ------------------------------------------------ |
+| 判断1 -a 判断2 | 逻辑与，判断1和判断2都成立，最终的结果才为真     |
+| 判断1 -o 判断2 | 逻辑或，判断1和判断2有一个成立，最终的结果就位真 |
+| ! 判断         | 逻辑非，使原始的判断式取反                       |
+
+> 判断aa变量是否不为空，如果不为空，就判断aa变量的数值是否大于23
+>
+> ```shell
+> yu@PC:~/Files$ [ -n "$aa" -a "$aa" -gt 23 ] && echo "yes" || echo "no"
+> no
+> ```
 
 ## 流程控制
 
+### if语句
+
+#### 1. 单分支if条件语句
+
+```shell
+if [ 条件判断式 ]; then
+	程序。。。
+fi
+
+或者
+
+if [ 条件判断式 ]
+	then
+		程序。。。
+fi
+```
+
+##### 单分支条件语句需要注意几个点
+
+- if语句使用fi结尾，和一般语言使用大括号结尾不同
+- [ 条件判断式 ]就是使用test命令判断，所以中括号和条件判断式之间必须有空格
+- then后面跟符合条件之后执行的程序，可以放在[  ]之后，用`;`分割。也可以换行写入，就不需要`;`了
+
+
+
+**😊实用小例子：判断分区使用率**
+
+```shell
+#!/bin/bash
+# 统计分区使用率
+# Author: yulu	(Email:XXXX@163.com)
+
+path=$1
+threshold=$2
+use_rate=$(df -h | grep "$path" | awk '{print $5}' | cut -d '%' -f 1)
+# 根据分区使用率作为变量赋值给变量user_rate
+if [ $use_rate -ge $threshold ]; then
+	echo "Warning! /dev/sda5 will be exhausted!!"
+fi
+yu@PC:~/bin$ chmod +x dfRate.sh
+yu@PC:~/bin$ dfRate.sh /dev/sda5 1
+Warning! /dev/sda5 will be exhausted!!
+```
+
+
+
+#### 2. 多分支if条件语句
+
+```shell
+if [ condition ]
+	then
+		...
+	else
+		...
+fi
+```
+
+**❤️实用小需求：备份重要文件**
+
+```shell
+#!/bin/bash
+  
+back_path=$1
+date=$(date +%y%m%d)
+size=$(du -sh $back_path)
+# 开始进行备份
+if [ -d /tmp/back_files ]
+        then
+                echo "Date is $date" > /tmp/back_files/backInfo.txt  # 覆盖
+                echo "Size is $size" >> /tmp/back_files/backInfo.txt # 追加
+                cd /tmp/back_files  # tar 压缩，归档的名字不能有/,所以需要提前移动到需要压缩文件的目录下
+                tar -zcf etc_$date.tar.gz /etc /tmp/back_files/backInfo.txt &> /dev/null # 把正确和错误输出都输入到黑洞中
+                rm -rf /tmp/back_files/backInfo.txt
+        else
+                echo "备份目录不存在"
+                mkdir /tmp/back_files
+                echo "创建备份目录 /tmp/back_files"
+                echo "Date is $date" > /tmp/back_files/backInfo.txt  # 覆盖
+                echo "Size is $size" >> /tmp/back_files/backInfo.txt # 追加
+                cd /tmp/back_files
+                tar -zcf etc_$date.tar.gz /etc /tmp/back_files/backInfo.txt &> /dev/null # 把正确和错误输出都输入到黑洞中
+                rm -rf /tmp/back_files/backInfo.txt
+fi
+
+```
+
+```shell
+root@PC:/home/yu/bin# ./backup.sh 
+备份目录不存在
+创建备份目录 /tmp/back_files
+root@PC:/home/yu/bin# ls /tmp/back_files/
+etc_211215.tar.gz
+# 不解压压缩包，只查看里面的内容
+root@PC:/home/yu/bin# tar -ztvf /tmp/back_files/etc_211215.tar.gz 
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/K01speech-dispatcher -> ../init.d/speech-dispatcher
+lrwxrwxrwx root/root         0 2021-12-08 23:20 etc/rc3.d/S01ssh -> ../init.d/ssh
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01pulseaudio-enable-autospawn -> ../init.d/pulseaudio-enable-autospawn
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01cron -> ../init.d/cron
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01dbus -> ../init.d/dbus
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01apport -> ../init.d/apport
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01avahi-daemon -> ../init.d/avahi-daemon
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01saned -> ../init.d/saned
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01acpid -> ../init.d/acpid
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01rsyslog -> ../init.d/rsyslog
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01console-setup.sh -> ../init.d/console-setup.sh
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01spice-vdagent -> ../init.d/spice-vdagent
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01rsync -> ../init.d/rsync
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01unattended-upgrades -> ../init.d/unattended-upgrades
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01gdm3 -> ../init.d/gdm3
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01cups -> ../init.d/cups
+lrwxrwxrwx root/root         0 2021-12-08 15:01 etc/rc3.d/S01grub-common -> ../init.d/grub-common
+drwxr-xr-x root/root         0 2020-04-23 15:39 etc/update-motd.d/
+-rwxr-xr-x root/root      4677 2019-12-05 22:39 etc/update-motd.d/50-motd-news
+-rwxr-xr-x root/root      1157 2019-12-05 22:39 etc/update-motd.d/10-help-text
+-rwxr-xr-x root/root       165 2020-04-14 06:37 etc/update-motd.d/92-unattended-upgrades
+-rwxr-xr-x root/root       299 2019-12-19 04:25 etc/update-motd.d/91-release-upgrade
+-rwxr-xr-x root/root      1220 2019-12-05 22:39 etc/update-motd.d/00-header
+-rwxr-xr-x root/root       144 2020-04-02 19:25 etc/update-motd.d/98-reboot-required
+-rwxr-xr-x root/root       142 2020-04-02 19:25 etc/update-motd.d/98-fsck-at-reboot
+-rwxr-xr-x root/root        96 2020-04-02 02:43 etc/update-motd.d/85-fwupd
+-rwxr-xr-x root/root       218 2020-04-02 19:25 etc/update-motd.d/90-updates-available
+-rwxr-xr-x root/root       129 2020-04-02 19:25 etc/update-motd.d/95-hwe-eol
+drwxr-xr-x root/root         0 2020-04-23 15:35 etc/pki/
+drwxr-xr-x root/root         0 2020-04-23 15:39 etc/pki/fwupd-metadata/
+-rw-r--r-- root/root      2169 2020-03-05 00:18 etc/pki/fwupd-metadata/GPG-KEY-Linux-Foundation-Metadata
+-rw-r--r-- root/root       959 2020-03-05 00:18 etc/pki/fwupd-metadata/GPG-KEY-Linux-Vendor-Firmware-Service
+-rw-r--r-- root/root      1679 2020-03-05 00:18 etc/pki/fwupd-metadata/LVFS-CA.pem
+drwxr-xr-x root/root         0 2020-04-23 15:39 etc/pki/fwupd/
+-rw-r--r-- root/root      2169 2020-03-05 00:18 etc/pki/fwupd/GPG-KEY-Linux-Foundation-Firmware
+-rw-r--r-- root/root      1702 2020-03-05 00:18 etc/pki/fwupd/GPG-KEY-Hughski-Limited
+-rw-r--r-- root/root       959 2020-03-05 00:18 etc/pki/fwupd/GPG-KEY-Linux-Vendor-Firmware-Service
+-rw-r--r-- root/root      1679 2020-03-05 00:18 etc/pki/fwupd/LVFS-CA.pem
+-rw-r--r-- root/root        29 2021-12-15 21:23 tmp/back_files/backInfo.txt
+```
+
+
+
+**❤️实用例子：判断apache是否启动？**
+
+```shell
+#!/bin/bash
+port=$(nmap -sT 192.168.1.156 | grep tcp | grep http | awk '{print $2}')
+# 使用nmap命令扫描服务器，并截取apache服务的状态，赋予变量port 
+if [ "$port" == "open" ]
+	then
+		echo "$(date) httpd is ok!" >> /tmp/autostart-acc.log
+	else
+		/etc/rc.d/init.d/httpd start &> /dev/null
+		echo "$(date) restart httpd !!" >> /tmp/autostart-err.log
+fi
+```
+
+
+
+#### 3. 多分支if条件语句
+
+```shell
+if [ 条件判断式1 ]
+	then
+		...
+elif [ 条件判断式2 ]
+	then
+		...
+else
+	then
+		...
+fi
+```
+
+例子：判断用户输入的是什么文件
+
+```shell
+#!/bin/bash
+read -p "Please input a filename:" file
+# 首先判断输入的内容是否为空
+if [ -z "$file" ]
+	then
+		echo "Error , please input a filename"
+		exit 1
+# -e 判断文件是否存在
+elif [ ! -e "$file" ]
+	then
+		echo "Your input is no a file or file is not exist !"
+		exit 2
+# 判断是否是普通文件
+elif [ -f "$file" ]
+	then
+		echo "$file is a regulare file!"
+elif [ -d "$file" ]
+	then
+		echo "$file is a directory"
+else
+	echo "$file is an other file!"
+fi	
+```
+
+
+
+### case 语句
+
+`case`和`if...elif...else`语句一样都是多分支条件语句，不过和`if`多分支条件语句不同的是，`case`语句只能判断一种条件关系，而`if`语句可以判断多种条件关系。
+
+```shell
+case $变量名 in
+	"value1")
+		如果变量名的值等于value1，执行程序1
+		;;
+	"value2")
+		....
+		;;
+	...
+	*)
+		如果变量的值都不是以上的值，则执行此程序
+		;;
+esac
+```
+
+
+
+### for 循环
+
+####  **语法1**
+
+```shell
+for 变量 in 值1 值2 值3 ...
+	do
+		程序
+	done
+```
+
+例子：
+
+```shell
+#!/bin/bash
+for time in morning noon afternoon evening
+	do
+		echo "This time is $time!"
+	done
+```
+
+批量解压缩脚本
+
+```shell
+#!/bin/bash
+cd /lamp
+ls *.tar.gz > ls.log
+for i in $(cat ls.log)
+	do
+		tar -zxf $i &> /dev/null
+	done
+rm -rf /lamp/ls.log
+```
+
+
+
+#### **语法2**
+
+```shell
+for (( 初始值;循环控制条件;变量变化))
+	do
+		...
+	done
+```
+
+例子：从1加到100
+
+```shell
+s=0
+for (( i=1;i<=100;i=i+1 ))
+	do
+		s=$(( $s+$i ))
+   	done
+echo "The sum of 1+2+...+100 is: $s"
+```
 
 
 
 
 
+### while 循环 与 until 循环
+
+while循环是不定循环，也称作条件循环。只要条件判断式成立，循环就会一直继续，直到条件判断式不成立，循环才会停止。这就和for的固定循环不太一样了。
+
+```shell
+while [ 条件判断式 ]
+	do
+		...
+		条件判断式中的条件改变策略
+		...
+	done
+```
+
+```shell
+#!/bin/bash
+
+i=1
+s=0
+while [ $i -le 100 ]
+	do
+		s=$(( $s+$i ))
+		i=$(( $i+1 ))
+	done
+echo "The Sum is：$s"
+```
 
 
 
+until循环，和while循环相反，until循环是只要条件判断式不成立则进入循环，并执行循环程序，一点循环条件成立，则终止循环。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```shell
+#!/bin/bash
+i=1
+s=0
+until [ $i -gt 100 ]
+	do
+		s=$(( $s+$i ))
+		i=$(( $i+1 ))
+	done
+echo "The Sum is：$s"
+```
 
 
 
