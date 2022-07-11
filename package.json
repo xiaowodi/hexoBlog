@@ -26,7 +26,7 @@
     "hexo-renderer-stylus": "^2.0.1",
     "hexo-server": "^2.0.0",
     "hexo-theme-landscape": "^0.0.3",
-    "hexo-theme-melody": "^1.9.0",
+    "hexo-theme-melody": "^1.9.1",
     "hexo-theme-resume": "^2.0.0"
   }
 }
